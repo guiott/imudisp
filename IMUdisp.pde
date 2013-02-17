@@ -143,7 +143,7 @@ void setup()
  Yh=height/2-CircleH/2;
 
  // Load the font that will be used for the N,E,S,W markings
- letters = loadFont("Tunga-48.vlw");
+ letters = loadFont("SansSerif-24.vlw");
  mono24 = loadFont("AndaleMono-24.vlw");
  mono48 = loadFont("AndaleMono-48.vlw");
  mono36 = loadFont("AndaleMono-36.vlw");

@@ -46,14 +46,14 @@ void compass(float Yaw)
   
   // Draw the letters
   fill(250);
-  textFont(letters, 32);
-  text("S", 1, -75);
+  textFont(letters);
+  text("S", 1, -73);
   rotate(radians(90));
-  text("W", 0, -75);
+  text("W", 0, -73);
   rotate(radians(90));
-  text("N", 0, -75);
+  text("N", 0, -73);
   rotate(radians(90));
-  text("E", 0, -75);
+  text("E", 0, -73);
   rotate(radians(90));
   
   // Draw the little orange airplane in the middle of the compass face
