@@ -348,7 +348,7 @@ void draw()
           RollRad = PI - RollRad;
         }
         
-        // Calcuate our heading from Rmat readings.
+        // Compute the heading from Rmat readings.
         YawRad = atan2(- Rmat[1] , Rmat[4]);
         YawDeg = (YawRad / (2 * PI)) * 360;
     }
