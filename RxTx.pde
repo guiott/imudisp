@@ -297,7 +297,7 @@ void TxData(int Id, int Cmd, int ValueLen, int IntFlag)
 
 /*-----------------------------------------------------------------------------*/  
 void TxArduinoCmd(int Cmd)
-{
+{// simpler TX procedure
   int ChkSum = 0;
 
   TxBuff[0] = (byte)('@');
