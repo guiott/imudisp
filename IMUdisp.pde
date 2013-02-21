@@ -228,6 +228,10 @@ void draw()
   
   if(RS232Flag)
   {
+    TxIntValue[0] = (int)(VelDes);
+    TxIntValue[1] = (int)(YawDes);
+    TxData(0, 'S', 2, 1); // send desired speed and direction to IMU
+    
     FrameCount++;
     if((FrameCount % 3) == 0) // every 3 cycle (0.3 seconds) ask for current and speed details
     {
@@ -267,7 +271,7 @@ void draw()
         Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
       }   
     }
-  
+      
     TxData(0, 'K', 0, 3);  // ask for all parameters every 0.1 seconds
     if (RxData('K',43))
     {// two bytes -> int16
