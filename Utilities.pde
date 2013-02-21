@@ -102,25 +102,36 @@ int Int16toint32 (int Int16)
     
     textFont(mono24);
     
-    text("FL" , Centre-125, height-225);
-    text("FR" , Centre-25, height-225);
-    text("RL" , Centre+75, height-225);
-    text("RR" , Centre+175, height-225);
+    text("FR" , Centre-125, height-225);
+    text("FL" , Centre-25, height-225);
+    text("RR" , Centre+75, height-225);
+    text("RL" , Centre+175, height-225); 
    
-    text("SFL" , Centre-125, height-200);
-    text("SFR" , Centre-25, height-200);
-    text("SRL" , Centre+75, height-200);
-    text("SRR" , Centre+175, height-200);
+    text(VelInt[0] , Centre-125, height-200);
+    text(VelInt[1] , Centre-25, height-200);
+    text(VelInt[2] , Centre+75, height-200);
+    text(VelInt[3] , Centre+175, height-200);
     
-    text("CFL" , Centre-125, height-175);
-    text("CFR" , Centre-25, height-175);
-    text("CRL" , Centre+75, height-175);
-    text("CRR" , Centre+175, height-175);
+    text(ADCValue[0] , Centre-125, height-175);
+    text(ADCValue[1] , Centre-25, height-175);
+    text(ADCValue[2] , Centre+75, height-175);
+    text(ADCValue[3] , Centre+175, height-175);
     
+    text(PosXmes , Centre-125, height-150);
+    text(PosYmes , Centre-125, height-125);
+
     textAlign(LEFT);
     text("Speed:", Centre-260, height-200);
     text("Curr.:", Centre-260, height-175);
-    
+    text("Pos X:", Centre-260, height-150);
+    text("Pos Y:", Centre-260, height-125);
+
+    textFont(mono36);
+    text("Slipp.", width-160, 300);
+        
+    textFont(mono24);
+    text("Count:" + (int)YawDes, width-160, 330);
+    text("Alarm:" + (int)VelDes, width-160, 355);
     
     //-----------------Desired values
     fill(0, 255, 0);
@@ -193,12 +204,12 @@ int Int16toint32 (int Int16)
     }
     
     textAlign(LEFT);
-    text("Lat:" + (int)Lat_gps, 10, 75);
-    text("Lon:" + (int)Lon_gps, 10, 100);
-    text("Alt:" + (int)Alt_gps, 10, 125);
-    text("Vel.:" + (int)Sog_gps, width-150, 75);
-    text("Dir.:" + (int)Cog_gps, width-150, 100);
-    text("Hdop:" + (int)Hdop, width-150, 125);
-    text("Sat.:" + (int)Svs, width-150, 150);
+    text("Lat:" + (float)Lat_gps/10000000, 10, 75);
+    text("Lon:" + (float)Lon_gps/10000000, 10, 100);
+    text("Alt:" + (float)Alt_gps/100, 10, 125);
+    text("Vel.:" + (float)Sog_gps/100, width-160, 75);
+    text("Dir.:" + (float)Cog_gps/100, width-160, 100);
+    text("Hdop:" + (int)Hdop, width-160, 125);
+    text("Sat.:" + (int)Svs, width-160, 150);
   
   }

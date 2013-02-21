@@ -197,10 +197,7 @@ boolean RxArduinoData(char Cmd,int Len)
       */
 
       //println("-------");
-      
-      YawDes = (Int16toint32(((RxBuffA[8] << 8) + (RxBuffA[9]))))*180/511-180;   
-      VelDes = (511-(Int16toint32(((RxBuffA[4] << 8) + (RxBuffA[5])))))*1200/511;
-    
+         
       if (RxBuffA[0] != '@')
       {
         ArduRxError(2, Cmd, Len, ChkSum);
@@ -298,6 +295,7 @@ void TxData(int Id, int Cmd, int ValueLen, int IntFlag)
   if (IntFlag != 3) TxFlag = true; // avoid to blink TX led for continuos send
 }
 
+/*-----------------------------------------------------------------------------*/  
 void TxArduinoCmd(int Cmd)
 {
   int ChkSum = 0;

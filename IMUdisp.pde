@@ -114,6 +114,17 @@ int i = 0;
  
  int YawDes; 
  int VelDes;
+ 
+ float PosXmes;  // current X position coordinate
+ Float PosX = new Float(0);
+
+ float PosYmes;  // current Y position coordinate
+ Float PosY = new Float(0);
+
+ int[] VelInt = new int[4];  // speed in mm/s as an integer for all the wheels
+ int[] ADCValue = new int[4];// 64 sample average ADC also for slave
+ int stasis_err;   // number of times imu and wheels very different
+ int stasis_alarm; // signal too many stasis errors
     
  int FrameCount = 0;
 
@@ -202,10 +213,12 @@ void draw()
   image(HorizonArea, HA_X, HA_Y);
   
   if(ArduinoFlag)
-  {
+  {  
     TxArduinoCmd('d');  // ask data
     if(RxArduinoData('d', 12))
     {
+      YawDes = (Int16toint32(((RxBuffA[8] << 8) + (RxBuffA[9]))))*180/511-180;   
+      VelDes = (511-(Int16toint32(((RxBuffA[4] << 8) + (RxBuffA[5])))))*1200/511;
       ArduRxErrorText= "-RX OK-";
     }
   }
@@ -213,112 +226,35 @@ void draw()
   // communication procedure with UDB4 board using protocol described here:
   // http://www.guiott.com/Rino/CommandDescr/Protocol.htm
   
-  if(FrameCount < 10)
+  if(RS232Flag)
   {
-    if(RS232Flag)
-    {
-      TxData(0, 'K', 0, 3);  // ask for all parameters
-      if (RxData('K',43))
-      {// two bytes -> int16
-       // four bytes -> int32
-       
-       Lat_gps=(RxBuff[HeadLen] << 24) + (RxBuff[HeadLen+1] << 16) + (RxBuff[HeadLen+2] << 8) + (RxBuff[HeadLen+3]); // MSB first
-       Lon_gps=(RxBuff[HeadLen+4] << 24) + (RxBuff[HeadLen+5] << 16) + (RxBuff[HeadLen+6] << 8) + (RxBuff[HeadLen+7]);
-       Alt_gps=(RxBuff[HeadLen+8] << 24) + (RxBuff[HeadLen+9] << 16) + (RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11]); 
-       Sog_gps=Int16toint32(((RxBuff[HeadLen+12] << 8) + (RxBuff[HeadLen+13])));
-       Cog_gps=Int16toint32(((RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15])));
-       Week_no=Int16toint32(((RxBuff[HeadLen+16] << 8) + (RxBuff[HeadLen+17])));
-       Tow=(RxBuff[HeadLen+18] << 32) + (RxBuff[HeadLen+19] << 16) + (RxBuff[HeadLen+20] << 8) + (RxBuff[HeadLen+21]); 
-       Hdop=RxBuff[HeadLen+22];
-       Svs=RxBuff[HeadLen+23];
-       Rmat[0]=Int16toint32(((RxBuff[HeadLen+24] << 8) + (RxBuff[HeadLen+25])));
-       Rmat[1]=Int16toint32(((RxBuff[HeadLen+26] << 8) + (RxBuff[HeadLen+27])));
-       Rmat[2]=Int16toint32(((RxBuff[HeadLen+28] << 8) + (RxBuff[HeadLen+29])));
-       Rmat[3]=Int16toint32(((RxBuff[HeadLen+30] << 8) + (RxBuff[HeadLen+31])));
-       Rmat[4]=Int16toint32(((RxBuff[HeadLen+32] << 8) + (RxBuff[HeadLen+33])));
-       Rmat[5]=Int16toint32(((RxBuff[HeadLen+34] << 8) + (RxBuff[HeadLen+35])));
-       Rmat[6]=Int16toint32(((RxBuff[HeadLen+36] << 8) + (RxBuff[HeadLen+37])));
-       Rmat[7]=Int16toint32(((RxBuff[HeadLen+38] << 8) + (RxBuff[HeadLen+39])));
-       Rmat[8]=Int16toint32(((RxBuff[HeadLen+40] << 8) + (RxBuff[HeadLen+41])));
-       Cpu_load=RxBuff[HeadLen+42];
-      
-      
-          /*
-           print("Lat: ");
-           print(Lat_gps);
-           print("  Long: ");
-           print(Lon_gps);
-           print("  Alt: ");
-           print(Alt_gps);
-           print("  Speed: ");
-           print(Sog_gps);  
-           print("  Dir: ");
-           print(Cog_gps);
-           print("  Week: ");
-           print(Week_no);  
-           print("  Time of week: ");
-           print(Tow);   
-           print("  HDOP: ");
-           print(Hdop);  
-           print("  Satellites: ");
-           print(Svs);  
-           print("  Rmat 0: ");
-           print(Rmat[0]);  
-           print("  Rmat 1: ");
-           print(Rmat[1]);   
-           print("  Rmat 2: ");
-           print(Rmat[2]);            
-           print("  Rmat 3: ");
-           print(Rmat[3]);                 
-           print("  Rmat 4: ");
-           print(Rmat[4]);             
-           print("  Rmat 5: ");
-           print(Rmat[5]);  
-           print("  Rmat 6: ");
-           print(Rmat[6]);   
-           print("  Rmat 7: ");
-           print(Rmat[7]);            
-           print("  Rmat 8: ");
-           println(Rmat[8]);                   
-          */ 
-     
-          PitchRad = asin(Rmat[7] / 16384.0); // RAD
-          PitchDeg = PitchRad / (2*PI) * 360;
-          RollRad = asin(Rmat[6] / 16385.0);
-          RollDeg = RollRad / (2*PI) * 360;
-          // Allow for inverted flight
-          if (Rmat[8] < 0)
-          {
-            RollDeg = 180 - RollDeg;
-            RollRad = PI - RollRad;
-          }
-          
-          // Calcuate our heading from Rmat readings.
-          YawRad = atan2(- Rmat[1] , Rmat[4]);
-          YawDeg = (YawRad / (2 * PI)) * 360;
-      }
-    } 
-    /*
-    // just for debug. Simulation of navigation values with the mouse movement 
-    float newX = map(mouseX, 0, 300, -150, 150);
-    PitchDeg = height% 360-mouseY+180;
-    PitchRad=radians(PitchDeg);
-    RollDeg = newX % 360;
-    RollRad=radians(RollDeg);
-    float CompassX = map(mouseX, 0,300, -180,180);
-    YawDeg = CompassX % 360;
-    YawRad=radians(YawDeg);
-    // println("Pitch = " + PitchDeg + "  Roll = " + RollDeg + "  Yaw = " + YawDeg);
-    // just for debug. Comment out the above lines for real job
-    */
-     
     FrameCount++;
-  }
-  else  // every 10 cycle (1 second) ask for GPS time
-  {
-    FrameCount = 0;
-    if(RS232Flag)
+    if((FrameCount % 3) == 0) // every 3 cycle (0.3 seconds) ask for current and speed details
     {
+      TxData(0, 'b', 0, 3);  // ask for time parameters
+      if (RxData('b', 10))
+      {// two bytes -> int16
+         // four bytes -> int32
+         
+        // current X position coordinate
+        PosXmes = PosX.intBitsToFloat((RxBuff[HeadLen] << 24) + (RxBuff[HeadLen+1] << 16) + (RxBuff[HeadLen+2] << 8) + (RxBuff[HeadLen+3])); // MSB first
+        // current Y position coordinate
+        PosYmes = PosY.intBitsToFloat((RxBuff[HeadLen+4] << 24) + (RxBuff[HeadLen+5] << 16) + (RxBuff[HeadLen+6] << 8) + (RxBuff[HeadLen+7])); // MSB first
+        VelInt[0] = Int16toint32(((RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])));
+        VelInt[1] = Int16toint32(((RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11])));
+        VelInt[2] = Int16toint32(((RxBuff[HeadLen+12] << 8) + (RxBuff[HeadLen+13])));
+        VelInt[3] = Int16toint32(((RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15])));
+        ADCValue[0] = Int16toint32(((RxBuff[HeadLen+16] << 8) + (RxBuff[HeadLen+17])));
+        ADCValue[1] = Int16toint32(((RxBuff[HeadLen+18] << 8) + (RxBuff[HeadLen+19])));
+        ADCValue[2] = Int16toint32(((RxBuff[HeadLen+20] << 8) + (RxBuff[HeadLen+21])));
+        ADCValue[3] = Int16toint32(((RxBuff[HeadLen+22] << 8) + (RxBuff[HeadLen+23])));      
+        stasis_err  = Int16toint32(RxBuff[HeadLen+24]); // number of times imu and wheels very different
+        stasis_alarm= Int16toint32(RxBuff[HeadLen+25]); // signal too many stasis errors    
+      }     
+    }
+    
+    if((FrameCount % 10) == 0)// every 10 cycle (1 second) ask for GPS time
+    {// every 3 * 10 = 30 seconds ask both
       TxData(0, 'T', 0, 3);  // ask for time parameters
       if (RxData('T', 10))
       {// two bytes -> int16
@@ -331,7 +267,101 @@ void draw()
         Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
       }   
     }
-  }
+  
+    TxData(0, 'K', 0, 3);  // ask for all parameters every 0.1 seconds
+    if (RxData('K',43))
+    {// two bytes -> int16
+     // four bytes -> int32
+     
+     Lat_gps=(RxBuff[HeadLen] << 24) + (RxBuff[HeadLen+1] << 16) + (RxBuff[HeadLen+2] << 8) + (RxBuff[HeadLen+3]); // MSB first
+     Lon_gps=(RxBuff[HeadLen+4] << 24) + (RxBuff[HeadLen+5] << 16) + (RxBuff[HeadLen+6] << 8) + (RxBuff[HeadLen+7]);
+     Alt_gps=(RxBuff[HeadLen+8] << 24) + (RxBuff[HeadLen+9] << 16) + (RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11]); 
+     Sog_gps=Int16toint32(((RxBuff[HeadLen+12] << 8) + (RxBuff[HeadLen+13])));
+     Cog_gps=Int16toint32(((RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15])));
+     Week_no=Int16toint32(((RxBuff[HeadLen+16] << 8) + (RxBuff[HeadLen+17])));
+     Tow=(RxBuff[HeadLen+18] << 32) + (RxBuff[HeadLen+19] << 16) + (RxBuff[HeadLen+20] << 8) + (RxBuff[HeadLen+21]); 
+     Hdop=RxBuff[HeadLen+22];
+     Svs=RxBuff[HeadLen+23];
+     Rmat[0]=Int16toint32(((RxBuff[HeadLen+24] << 8) + (RxBuff[HeadLen+25])));
+     Rmat[1]=Int16toint32(((RxBuff[HeadLen+26] << 8) + (RxBuff[HeadLen+27])));
+     Rmat[2]=Int16toint32(((RxBuff[HeadLen+28] << 8) + (RxBuff[HeadLen+29])));
+     Rmat[3]=Int16toint32(((RxBuff[HeadLen+30] << 8) + (RxBuff[HeadLen+31])));
+     Rmat[4]=Int16toint32(((RxBuff[HeadLen+32] << 8) + (RxBuff[HeadLen+33])));
+     Rmat[5]=Int16toint32(((RxBuff[HeadLen+34] << 8) + (RxBuff[HeadLen+35])));
+     Rmat[6]=Int16toint32(((RxBuff[HeadLen+36] << 8) + (RxBuff[HeadLen+37])));
+     Rmat[7]=Int16toint32(((RxBuff[HeadLen+38] << 8) + (RxBuff[HeadLen+39])));
+     Rmat[8]=Int16toint32(((RxBuff[HeadLen+40] << 8) + (RxBuff[HeadLen+41])));
+     Cpu_load=RxBuff[HeadLen+42];
+    
+    
+        /*
+         print("Lat: ");
+         print(Lat_gps);
+         print("  Long: ");
+         print(Lon_gps);
+         print("  Alt: ");
+         print(Alt_gps);
+         print("  Speed: ");
+         print(Sog_gps);  
+         print("  Dir: ");
+         print(Cog_gps);
+         print("  Week: ");
+         print(Week_no);  
+         print("  Time of week: ");
+         print(Tow);   
+         print("  HDOP: ");
+         print(Hdop);  
+         print("  Satellites: ");
+         print(Svs);  
+         print("  Rmat 0: ");
+         print(Rmat[0]);  
+         print("  Rmat 1: ");
+         print(Rmat[1]);   
+         print("  Rmat 2: ");
+         print(Rmat[2]);            
+         print("  Rmat 3: ");
+         print(Rmat[3]);                 
+         print("  Rmat 4: ");
+         print(Rmat[4]);             
+         print("  Rmat 5: ");
+         print(Rmat[5]);  
+         print("  Rmat 6: ");
+         print(Rmat[6]);   
+         print("  Rmat 7: ");
+         print(Rmat[7]);            
+         print("  Rmat 8: ");
+         println(Rmat[8]);                   
+        */ 
+   
+        PitchRad = asin(Rmat[7] / 16384.0); // RAD
+        PitchDeg = PitchRad / (2*PI) * 360;
+        RollRad = asin(Rmat[6] / 16385.0);
+        RollDeg = RollRad / (2*PI) * 360;
+        // Allow for inverted flight
+        if (Rmat[8] < 0)
+        {
+          RollDeg = 180 - RollDeg;
+          RollRad = PI - RollRad;
+        }
+        
+        // Calcuate our heading from Rmat readings.
+        YawRad = atan2(- Rmat[1] , Rmat[4]);
+        YawDeg = (YawRad / (2 * PI)) * 360;
+    }
+  } 
+  /*
+  // just for debug. Simulation of navigation values with the mouse movement 
+  float newX = map(mouseX, 0, 300, -150, 150);
+  PitchDeg = height% 360-mouseY+180;
+  PitchRad=radians(PitchDeg);
+  RollDeg = newX % 360;
+  RollRad=radians(RollDeg);
+  float CompassX = map(mouseX, 0,300, -180,180);
+  YawDeg = CompassX % 360;
+  YawRad=radians(YawDeg);
+  // println("Pitch = " + PitchDeg + "  Roll = " + RollDeg + "  Yaw = " + YawDeg);
+  // just for debug. Comment out the above lines for real job
+  */
 
   movingHorizon(PitchDeg, RollDeg);
   frameHoriz();
