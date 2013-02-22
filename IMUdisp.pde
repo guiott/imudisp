@@ -266,8 +266,8 @@ void draw()
         Year = Int16toint32(((RxBuff[HeadLen] << 8) + (RxBuff[HeadLen+1])));
         Month = Int16toint32(RxBuff[HeadLen+2]);
         Day = Int16toint32(RxBuff[HeadLen+3]);
-        Minutes = Int16toint32(RxBuff[HeadLen+4]);
-        Hours = Int16toint32(RxBuff[HeadLen+5]);
+        Hours = Int16toint32(RxBuff[HeadLen+4]);
+        Minutes = Int16toint32(RxBuff[HeadLen+5]);
         Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
       }   
     }
