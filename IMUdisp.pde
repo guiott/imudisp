@@ -235,7 +235,7 @@ void draw()
     FrameCount++;
     if((FrameCount % 3) == 0) // every 3 cycle (0.3 seconds) ask for current and speed details
     {
-      TxData(0, 'b', 0, 3);  // ask for time parameters
+      TxData(0, 'b', 0, 3);  // ask for details on speed, current and position
       if (RxData('b', 10))
       {// two bytes -> int16
          // four bytes -> int32
