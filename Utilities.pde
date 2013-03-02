@@ -130,8 +130,13 @@ int Int16toint32 (int Int16)
     text("Slipp.", width-160, 300);
         
     textFont(mono24);
-    text("Count:" + (int)YawDes, width-160, 330);
-    text("Alarm:" + (int)VelDes, width-160, 355);
+    text("Count:" + (int)stasis_err, width-160, 330);
+    text("Alarm:" + (int)stasis_alarm, width-160, 355);
+    
+    textFont(mono12);
+    text("" + RxErrorText, width-160, 380);
+    text("" + Err, width-160, 395);
+    
     
     //-----------------Desired values
     fill(0, 255, 0);
@@ -143,6 +148,8 @@ int Int16toint32 (int Int16)
     textFont(mono24);
     text("Yaw:" + (int)YawDes, 10, 330);
     text("Vel:" + (int)VelDes, 10, 355);
+    
+    textFont(mono12);
     text(ArduRxErrorText, 10, 380);
     
     //-----------------GPS

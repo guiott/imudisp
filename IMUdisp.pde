@@ -29,6 +29,7 @@ guido@guiott.com
 import processing.serial.*;
 
 PFont letters;
+PFont mono12;
 PFont mono24;
 PFont mono48;
 PFont mono36;
@@ -155,6 +156,7 @@ void setup()
 
  // Load the font that will be used for the N,E,S,W markings
  letters = loadFont("SansSerif-24.vlw");
+ mono12 = loadFont("AndaleMono-12.vlw");
  mono24 = loadFont("AndaleMono-24.vlw");
  mono48 = loadFont("AndaleMono-48.vlw");
  mono36 = loadFont("AndaleMono-36.vlw");
@@ -236,7 +238,7 @@ void draw()
     if((FrameCount % 3) == 0) // every 3 cycle (0.3 seconds) ask for current and speed details
     {
       TxData(0, 'b', 0, 3);  // ask for details on speed, current and position
-      if (RxData('b', 10))
+      if (RxData('b', 26))
       {// two bytes -> int16
          // four bytes -> int32
          
