@@ -147,6 +147,15 @@ int Int16toint32 (int Int16)
         
     textFont(mono24);
     text("Yaw:" + (int)YawDes, 10, 330);
+    
+    if (CommWd > COMM_WD_TMO)
+    {// too much time without new data from joystick. Vel value not valid
+      fill(255, 0, 0);
+    }
+    else
+    {
+      fill(0, 255, 0);
+    }
     text("Vel:" + (int)VelDes, 10, 355);
     
     textFont(mono12);
@@ -158,6 +167,9 @@ int Int16toint32 (int Int16)
     textFont(mono36);
     textAlign(CENTER);
     text("GPS", width/2, 70);
+    
+    textFont(mono24);
+    text("UTC", width/2, 20);
     
     textFont(mono24);
     textAlign(RIGHT);
@@ -201,13 +213,13 @@ int Int16toint32 (int Int16)
 
     textAlign(LEFT);
 
-    if(Seconds<10)
+    if(Seconds<10000)
     {
-      text("0"+(int)Seconds, Centre+80, 20);
+      text("0"+(int)Seconds/1000, Centre+80, 20);
     }
     else
     {
-      text(""+(int)Seconds, Centre+80, 20);
+      text(""+(int)Seconds/1000, Centre+80, 20);
     }
     
     textAlign(LEFT);

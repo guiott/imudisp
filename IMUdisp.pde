@@ -52,7 +52,7 @@ int Month;
 int Day;
 int Hours;
 int Minutes;
-float Seconds;
+int Seconds;
 Float Sec = new Float(0);
 
 String[] SerialList = new String[0];  // declare an empty string for serial ports list 
@@ -128,6 +128,9 @@ int i = 0;
  int stasis_alarm; // signal too many stasis errors
     
  int FrameCount = 0;
+ 
+ int CommWd = 0; // communication Watch Dog fails counter
+ int COMM_WD_TMO = 20;  // CommWd timeout. At 10Hz rate this means 2 seconds
 
 /*/////////////////////////////////////////////////////////////////////////////*/
 void setup()
@@ -199,6 +202,7 @@ RS232Port = new Serial(this, "/dev/tty.usbserial-A20e27AC", 57600);
   {
       println("IMU not ready");
       RS232Flag = false;         // turn OFF IMU sending
+      RxErrorText= "-NO IMU-";
   }  
 }
   
@@ -222,6 +226,7 @@ void draw()
       YawDes = (Int16toint32(((RxBuffA[8] << 8) + (RxBuffA[9]))))*180/511-180;   
       VelDes = (511-(Int16toint32(((RxBuffA[4] << 8) + (RxBuffA[5])))))*1200/511;
       ArduRxErrorText= "-RX OK-";
+      CommWd = 0; // new valid data, Watch Dog reset
     }
   }
 
@@ -230,6 +235,11 @@ void draw()
   
   if(RS232Flag)
   {
+    CommWd ++;
+    if (CommWd > COMM_WD_TMO)
+    {// too much time without new data from joystick. Vel set to zero for safety
+      VelDes = 0; 
+    }
     TxIntValue[0] = (int)(VelDes);
     TxIntValue[1] = (int)(YawDes);
     TxData(0, 'S', 2, 1); // send desired speed and direction to IMU
@@ -262,7 +272,7 @@ void draw()
     if((FrameCount % 10) == 0)// every 10 cycle (1 second) ask for GPS time
     {// every 3 * 10 = 30 seconds ask both
       TxData(0, 'T', 0, 3);  // ask for time parameters
-      if (RxData('T', 10))
+      if (RxData('T', 8))
       {// two bytes -> int16
          // four bytes -> int32
         Year = Int16toint32(((RxBuff[HeadLen] << 8) + (RxBuff[HeadLen+1])));
@@ -270,7 +280,8 @@ void draw()
         Day = Int16toint32(RxBuff[HeadLen+3]);
         Hours = Int16toint32(RxBuff[HeadLen+4]);
         Minutes = Int16toint32(RxBuff[HeadLen+5]);
-        Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
+        Seconds = (((RxBuff[HeadLen+6] << 8) + (RxBuff[HeadLen+7])));
+        //Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
       }   
     }
       
