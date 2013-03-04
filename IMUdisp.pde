@@ -44,6 +44,9 @@ int Week_no;
 int Tow;
 int Hdop;
 int Svs;
+int  SatIdList_gps;
+int  Hepe_gps;
+
 int[] Rmat = new int[9]; 
 int Cpu_load;
 
@@ -282,11 +285,23 @@ void draw()
         Minutes = Int16toint32(RxBuff[HeadLen+5]);
         Seconds = (((RxBuff[HeadLen+6] << 8) + (RxBuff[HeadLen+7])));
         //Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
-      }   
+      } 
+    
+      TxData(0, 'G', 0, 3);  // ask for all parameters every 0.1 seconds
+      if (RxData('G', 16))
+      {// two bytes -> int16
+        // four bytes -> int32
+        Week_no=Int16toint32(((RxBuff[HeadLen] << 8) + (RxBuff[HeadLen+1])));
+        Tow=(RxBuff[HeadLen+2] << 32) + (RxBuff[HeadLen+3] << 16) + (RxBuff[HeadLen+4] << 8) + (RxBuff[HeadLen+5]); 
+        Hdop=RxBuff[HeadLen+6];
+        Svs=RxBuff[HeadLen+7];
+        SatIdList_gps=(RxBuff[HeadLen+8] << 32) + (RxBuff[HeadLen+9] << 16) + (RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11]);
+        Hepe_gps=(RxBuff[HeadLen+12] << 32) + (RxBuff[HeadLen+13] << 16) + (RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15]);
+      }
     }
       
     TxData(0, 'K', 0, 3);  // ask for all parameters every 0.1 seconds
-    if (RxData('K',43))
+    if (RxData('K',35))
     {// two bytes -> int16
      // four bytes -> int32
      
@@ -295,20 +310,16 @@ void draw()
      Alt_gps=(RxBuff[HeadLen+8] << 24) + (RxBuff[HeadLen+9] << 16) + (RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11]); 
      Sog_gps=Int16toint32(((RxBuff[HeadLen+12] << 8) + (RxBuff[HeadLen+13])));
      Cog_gps=Int16toint32(((RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15])));
-     Week_no=Int16toint32(((RxBuff[HeadLen+16] << 8) + (RxBuff[HeadLen+17])));
-     Tow=(RxBuff[HeadLen+18] << 32) + (RxBuff[HeadLen+19] << 16) + (RxBuff[HeadLen+20] << 8) + (RxBuff[HeadLen+21]); 
-     Hdop=RxBuff[HeadLen+22];
-     Svs=RxBuff[HeadLen+23];
-     Rmat[0]=Int16toint32(((RxBuff[HeadLen+24] << 8) + (RxBuff[HeadLen+25])));
-     Rmat[1]=Int16toint32(((RxBuff[HeadLen+26] << 8) + (RxBuff[HeadLen+27])));
-     Rmat[2]=Int16toint32(((RxBuff[HeadLen+28] << 8) + (RxBuff[HeadLen+29])));
-     Rmat[3]=Int16toint32(((RxBuff[HeadLen+30] << 8) + (RxBuff[HeadLen+31])));
-     Rmat[4]=Int16toint32(((RxBuff[HeadLen+32] << 8) + (RxBuff[HeadLen+33])));
-     Rmat[5]=Int16toint32(((RxBuff[HeadLen+34] << 8) + (RxBuff[HeadLen+35])));
-     Rmat[6]=Int16toint32(((RxBuff[HeadLen+36] << 8) + (RxBuff[HeadLen+37])));
-     Rmat[7]=Int16toint32(((RxBuff[HeadLen+38] << 8) + (RxBuff[HeadLen+39])));
-     Rmat[8]=Int16toint32(((RxBuff[HeadLen+40] << 8) + (RxBuff[HeadLen+41])));
-     Cpu_load=RxBuff[HeadLen+42];
+     Rmat[0]=Int16toint32(((RxBuff[HeadLen+16] << 8) + (RxBuff[HeadLen+17])));
+     Rmat[1]=Int16toint32(((RxBuff[HeadLen+18] << 8) + (RxBuff[HeadLen+19])));
+     Rmat[2]=Int16toint32(((RxBuff[HeadLen+20] << 8) + (RxBuff[HeadLen+21])));
+     Rmat[3]=Int16toint32(((RxBuff[HeadLen+22] << 8) + (RxBuff[HeadLen+23])));
+     Rmat[4]=Int16toint32(((RxBuff[HeadLen+24] << 8) + (RxBuff[HeadLen+25])));
+     Rmat[5]=Int16toint32(((RxBuff[HeadLen+26] << 8) + (RxBuff[HeadLen+27])));
+     Rmat[6]=Int16toint32(((RxBuff[HeadLen+28] << 8) + (RxBuff[HeadLen+29])));
+     Rmat[7]=Int16toint32(((RxBuff[HeadLen+30] << 8) + (RxBuff[HeadLen+31])));
+     Rmat[8]=Int16toint32(((RxBuff[HeadLen+32] << 8) + (RxBuff[HeadLen+33])));
+     Cpu_load=RxBuff[HeadLen+34];
     
     
         /*

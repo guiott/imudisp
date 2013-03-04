@@ -117,8 +117,8 @@ int Int16toint32 (int Int16)
     text(ADCValue[2] , Centre+75, height-175);
     text(ADCValue[3] , Centre+175, height-175);
     
-    text(PosXmes , Centre-125, height-150);
-    text(PosYmes , Centre-125, height-125);
+    text(PosXmes , Centre-60, height-150);
+    text(PosYmes , Centre-60, height-125);
 
     textAlign(LEFT);
     text("Speed:", Centre-260, height-200);
@@ -166,69 +166,92 @@ int Int16toint32 (int Int16)
     
     textFont(mono36);
     textAlign(CENTER);
-    text("GPS", width/2, 70);
-    
-    textFont(mono24);
-    text("UTC", width/2, 20);
-    
+    text("GPS", width/2, 100);
+            
     textFont(mono24);
     textAlign(RIGHT);
+    
+    int DatePos = 210;
+    
+    text("UTC", DatePos, 20);
+    
     if(Day<10)
     {
-      text("0"+(int)Day + "-", Centre-160, 20);
+      text("0"+(int)Day + "-", DatePos-160, 20);
     }
     else
     {
-      text((int)Day + "-", Centre-160, 20);
+      text((int)Day + "-", DatePos-160, 20);
     }
     
     if(Month<10)
     {
-      text("0"+(int)Month + "-", Centre-120, 20);
+      text("0"+(int)Month + "-", DatePos-120, 20);
     }
     else
     {
-      text((int)Month + "-", Centre-120, 20);
+      text((int)Month + "-", DatePos-120, 20);
     }
     
-    text((int)Year, Centre-65, 20);
+    text((int)Year, DatePos-65, 20);
     
     if(Hours<10)
     {
-      text("0"+(int)Hours + ":", Centre+40, 20);
+      text("0"+(int)Hours + ":", DatePos+60, 20);
     }
     else
     {
-      text((int)Hours + ":", Centre+40, 20);
+      text((int)Hours + ":", DatePos+60, 20);
     }
       
     if(Minutes<10)
     {
-      text("0"+(int)Minutes + ":", Centre+80, 20);
+      text("0"+(int)Minutes + ":", DatePos+100, 20);
     }
     else
     {
-      text((int)Minutes + ":", Centre+80, 20);
+      text((int)Minutes + ":", DatePos+100, 20);
     }
 
     textAlign(LEFT);
 
     if(Seconds<10000)
     {
-      text("0"+(int)Seconds/1000, Centre+80, 20);
+      text("0"+(int)Seconds/1000, DatePos+100, 20);
     }
     else
     {
-      text(""+(int)Seconds/1000, Centre+80, 20);
+      text(""+(int)Seconds/1000, DatePos+100, 20);
     }
     
+    textFont(mono36);
+    textAlign(CENTER);
+
+    int Mask = 0;
+    for(int i = 0; i < 32; i++)
+    {
+      Mask = SatIdList_gps >> i;
+      if((Mask & 1) == 1)
+      {
+          text("*", width-(15*i+20), 27);
+      }
+    }  
+
+    textFont(mono12);
+    for( i = 0; i < 32; i++)
+    {
+        text((i+1) % 10, width-(15*i+20), 30);
+    }  
+    
+    textFont(mono24);    
     textAlign(LEFT);
     text("Lat:" + (float)Lat_gps/10000000, 10, 75);
     text("Lon:" + (float)Lon_gps/10000000, 10, 100);
     text("Alt:" + (float)Alt_gps/100, 10, 125);
     text("Vel.:" + (float)Sog_gps/100, width-160, 75);
     text("Dir.:" + (float)Cog_gps/100, width-160, 100);
-    text("Hdop:" + (int)Hdop, width-160, 125);
-    text("Sat.:" + (int)Svs, width-160, 150);
+    text("HDOP:" + (int)Hdop, width-160, 125);
+    text("HEPE:" + Hepe_gps/100, width-160, 150);
+    text("Sat.:" + (int)Svs, width-160, 175);
   
   }
