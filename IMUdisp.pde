@@ -116,8 +116,15 @@ int i = 0;
  int SizeX = 600;
  int SizeY = 300;
  
- int YawDes; 
- int VelDes;
+ // data received from joystick
+ int YawDes;      // desired heading
+ int VelDes;      // desired speed
+ int DigitalBits; // status of switches and LEDs
+ int LedRedFlag = 0;
+ int LedGreenFlag = 0;
+ int LedYellowFlag = 0;
+ int SwitchBit = 0;
+ int PushBit = 0;
  
  float PosXmes;  // current X position coordinate
  Float PosX = new Float(0);
@@ -134,6 +141,23 @@ int i = 0;
  
  int CommWd = 0; // communication Watch Dog fails counter
  int COMM_WD_TMO = 20;  // CommWd timeout. At 10Hz rate this means 2 seconds
+ 
+ PImage LedRedOn;
+ PImage LedRedOff;
+ PImage LedGreenOn;
+ PImage LedGreenOff;
+ PImage LedYellowOn;
+ PImage LedYellowOff;
+ 
+ int LedRedX = 20;
+ int LedRedY = 450;
+
+ int LedGreenX = 125;
+ int LedGreenY = 450;
+ 
+ int LedYellowX = 230;
+ int LedYellowY = 450;
+
 
 /*/////////////////////////////////////////////////////////////////////////////*/
 void setup()
@@ -141,6 +165,13 @@ void setup()
  size(1024 , 768, P3D);
  frameRate(10);
 
+  LedRedOff = loadImage("LedRedOff.gif");
+  LedRedOn = loadImage("LedRedOn.gif");
+  LedGreenOn = loadImage("LedGreenOn.gif");
+  LedGreenOff = loadImage("LedGreenOff.gif");
+  LedYellowOn = loadImage("LedYellowOn.gif");
+  LedYellowOff = loadImage("LedYellowOff.gif");
+  
  // Compass gauge parameters
  CmHorX = width-280;    // X Starting point
  CmHorY = height-280;   // Y Starting point
@@ -224,10 +255,19 @@ void draw()
   if(ArduinoFlag)
   {  
     TxArduinoCmd('d');  // ask data
-    if(RxArduinoData('d', 12))
+    if(RxArduinoData('d', 13))
     {
-      YawDes = (Int16toint32(((RxBuffA[8] << 8) + (RxBuffA[9]))))*180/511-180;   
-      VelDes = (511-(Int16toint32(((RxBuffA[4] << 8) + (RxBuffA[5])))))*1200/511;
+      VelDes = (511-(Int16toint32(((RxBuffA[4] << 8) + (RxBuffA[5])))))*1200/511;    // joistick 0
+   // Dummy  = (511-(Int16toint32(((RxBuffA[6] << 8) + (RxBuffA[7])))))*1200/511;    // joistick 1 not used
+      YawDes = (Int16toint32(((RxBuffA[8] << 8) + (RxBuffA[9]))))*180/511-180;       // joistick 2
+   // Dummy  = (511-(Int16toint32(((RxBuffA[10] << 8) + (RxBuffA[11])))))*1200/511;  // joistick 3 not used
+      DigitalBits = Int16toint32(RxBuffA[12]);
+      LedRedFlag = (DigitalBits & 0X01);
+      LedGreenFlag = (DigitalBits & 0X02) >> 1;
+      LedYellowFlag = (DigitalBits & 0X04) >> 2;
+      SwitchBit = (DigitalBits & 0X010) >> 4;
+      PushBit = (DigitalBits & 0X020) >> 5;
+        
       ArduRxErrorText= "-RX OK-";
       CommWd = 0; // new valid data, Watch Dog reset
     }
@@ -243,8 +283,18 @@ void draw()
     {// too much time without new data from joystick. Vel set to zero for safety
       VelDes = 0; 
     }
-    TxIntValue[0] = (int)(VelDes);
-    TxIntValue[1] = (int)(YawDes);
+    
+    if(SwitchBit == 1)      // speed and heading set only if switch is eanbled
+    {
+      TxIntValue[0] = (int)(VelDes);
+      TxIntValue[1] = (int)(YawDes);
+    }
+    else
+    {
+      TxIntValue[0] = 0;
+      TxIntValue[1] = 0;    
+    }
+    
     TxData(0, 'S', 2, 1); // send desired speed and direction to IMU
     
     FrameCount++;
@@ -274,7 +324,7 @@ void draw()
     
     if((FrameCount % 10) == 0)// every 10 cycle (1 second) ask for GPS time
     {// every 3 * 10 = 30 seconds ask both
-      TxData(0, 'T', 0, 3);  // ask for time parameters
+      TxData(0, 'T', 0, 3);  // ask for GPS time parameters
       if (RxData('T', 8))
       {// two bytes -> int16
          // four bytes -> int32
@@ -287,7 +337,7 @@ void draw()
         //Seconds = Sec.intBitsToFloat((RxBuff[HeadLen+6] << 24) + (RxBuff[HeadLen+7] << 16) + (RxBuff[HeadLen+8] << 8) + (RxBuff[HeadLen+9])); // MSB first
       } 
     
-      TxData(0, 'G', 0, 3);  // ask for all parameters every 0.1 seconds
+      TxData(0, 'G', 0, 3);  // ask for GPS service parameters every 0.1 seconds
       if (RxData('G', 16))
       {// two bytes -> int16
         // four bytes -> int32
@@ -300,7 +350,7 @@ void draw()
       }
     }
       
-    TxData(0, 'K', 0, 3);  // ask for all parameters every 0.1 seconds
+    TxData(0, 'K', 0, 3);  // ask for GPS & IMU (DCM) parameters every 0.1 seconds
     if (RxData('K',35))
     {// two bytes -> int16
      // four bytes -> int32
@@ -391,6 +441,7 @@ void draw()
   // just for debug. Comment out the above lines for real job
   */
 
+  DispLed();
   movingHorizon(PitchDeg, RollDeg);
   frameHoriz();
   compass(YawDeg);

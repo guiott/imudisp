@@ -98,6 +98,7 @@ void ArduRxError(int ErrCode, char Cmd, int Len, int ChkSum)
     }
   }
   
+  println("Joy Error = " + ArduRxErrorText);
   Err++;
 } 
 
@@ -214,7 +215,7 @@ boolean RxArduinoData(char Cmd,int Len)
         return false;
       }
       
-      for (i=0; i < 12; i++)  //  ChkSum excluded
+      for (i=0; i < 13; i++)  //  ChkSum excluded
       {
         ChkSum += (char)(RxBuffA[i]);
       }

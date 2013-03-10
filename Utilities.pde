@@ -250,8 +250,46 @@ int Int16toint32 (int Int16)
     text("Alt:" + (float)Alt_gps/100, 10, 125);
     text("Vel.:" + (float)Sog_gps/100, width-160, 75);
     text("Dir.:" + (float)Cog_gps/100, width-160, 100);
-    text("HDOP:" + (int)Hdop, width-160, 125);
-    text("HEPE:" + Hepe_gps/100, width-160, 150);
+    text("HDOP:" + (float)Hdop/5, width-160, 125);
+    text("HEPE:" + (float)Hepe_gps/100, width-160, 150);
     text("Sat.:" + (int)Svs, width-160, 175);
   
   }
+
+  /*-----------------------------------------------------------------------------*/  
+  void DispLed(void)
+  {  
+  fill(255, 255, 255); 
+  textFont(mono12);
+  textAlign(CENTER);
+  
+  text("Send Vel", LedRedX+10, LedRedY-10);
+  if(LedRedFlag == 1)
+  {
+    image(LedRedOn, LedRedX, LedRedY);
+  }
+  else
+  {
+    image(LedRedOff, LedRedX, LedRedY);
+  }
+  
+  text("Vel OK", LedGreenX+10, LedGreenY-10);
+  if(LedGreenFlag == 1)
+  {
+    image(LedGreenOn, LedGreenX, LedGreenY);
+  }
+  else
+  {
+    image(LedGreenOff, LedGreenX, LedGreenY);
+  }
+
+  text("RX", LedYellowX+10, LedYellowY-10);
+  if(LedYellowFlag == 1)
+  {
+    image(LedYellowOn, LedYellowX, LedYellowY);
+  }
+  else
+  {
+    image(LedYellowOff, LedYellowX, LedYellowY);
+  }
+ }
