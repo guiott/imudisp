@@ -251,7 +251,7 @@ int Int16toint32 (int Int16)
     text("Vel.:" + (float)Sog_gps/100, width-160, 75);
     text("Dir.:" + (float)Cog_gps/100, width-160, 100);
     text("HDOP:" + (float)Hdop/5, width-160, 125);
-    text("HEPE:" + (float)Hepe_gps/100, width-160, 150);
+    text("EHPE:" + (float)Ehpe_gps/100, width-160, 150);
     text("Sat.:" + (int)Svs, width-160, 175);
   
   }

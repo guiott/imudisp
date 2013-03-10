@@ -45,7 +45,7 @@ int Tow;
 int Hdop;
 int Svs;
 int  SatIdList_gps;
-int  Hepe_gps;
+int  Ehpe_gps;
 
 int[] Rmat = new int[9]; 
 int Cpu_load;
@@ -346,7 +346,7 @@ void draw()
         Hdop=RxBuff[HeadLen+6];
         Svs=RxBuff[HeadLen+7];
         SatIdList_gps=(RxBuff[HeadLen+8] << 32) + (RxBuff[HeadLen+9] << 16) + (RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11]);
-        Hepe_gps=(RxBuff[HeadLen+12] << 32) + (RxBuff[HeadLen+13] << 16) + (RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15]);
+        Ehpe_gps=(RxBuff[HeadLen+12] << 32) + (RxBuff[HeadLen+13] << 16) + (RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15]);
       }
     }
       
