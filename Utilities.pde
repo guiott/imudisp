@@ -257,7 +257,7 @@ int Int16toint32 (int Int16)
   }
 
   /*-----------------------------------------------------------------------------*/  
-  void DispLed(void)
+  void DispLed()
   {  
   fill(255, 255, 255); 
   textFont(mono12);
