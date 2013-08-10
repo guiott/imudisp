@@ -17,7 +17,7 @@ void compass(float Yaw)
   // and rotates them around the "origin".
   translate(CmHorX+150, CmHorY+150);
 
-  rotate(radians(Yaw));
+  rotate(radians(360-Yaw));
   
   noStroke();
   fill(250);
@@ -47,17 +47,17 @@ void compass(float Yaw)
   // Draw the letters
   fill(250);
   textFont(letters);
-  text("S", 1, -73);
-  rotate(radians(90));
-  text("W", 0, -73);
-  rotate(radians(90));
-  text("N", 0, -73);
+  text("N", 1, -73);
   rotate(radians(90));
   text("E", 0, -73);
   rotate(radians(90));
+  text("S", 0, -73);
+  rotate(radians(90));
+  text("W", 0, -73);
+  rotate(radians(90));
   
   // Draw the little orange airplane in the middle of the compass face
-  rotate(radians(-Yaw)); //make it stationary
+  rotate(radians(-360+Yaw)); //make it stationary
   stroke(234,144,7);
   strokeWeight(5);
   beginShape(LINES);

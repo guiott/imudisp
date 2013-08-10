@@ -57,9 +57,9 @@ int Int16toint32 (int Int16)
   void Box3D()
   {
     pushMatrix();
-    translate(width/2, height/2-60,200);
+    translate(width/2, height/2-100,200);
     rotateX(PitchRad+PI/2);
-    rotateZ(YawRad);
+    rotateZ(radians(Rot));
     rotateY(RollRad);
     fill(0,255,0);
     stroke(0);
@@ -98,7 +98,7 @@ int Int16toint32 (int Int16)
 
     textFont(mono36);
     textAlign(CENTER);
-    text("dsNAV", width/2, height-260);
+    text("dsNAV", width/2+155, height-130);
     
     textFont(mono24);
     
@@ -166,7 +166,7 @@ int Int16toint32 (int Int16)
     
     textFont(mono36);
     textAlign(CENTER);
-    text("GPS", width/2, 100);
+    text("GPS", width/2-40, 40);
             
     textFont(mono24);
     textAlign(RIGHT);
@@ -251,7 +251,7 @@ int Int16toint32 (int Int16)
     text("Vel.:" + (float)Sog_gps/100, width-160, 75);
     text("Dir.:" + (float)Cog_gps/100, width-160, 100);
     text("HDOP:" + (float)Hdop/5, width-160, 125);
-    text("EHPE:" + (float)Ehpe_gps/100, width-160, 150);
+    text("HEPE:" + (float)Hepe_gps/100, width-160, 150);
     text("Sat.:" + (int)Svs, width-160, 175);
   
   }
@@ -293,3 +293,5 @@ int Int16toint32 (int Int16)
     image(LedYellowOff, LedYellowX, LedYellowY);
   }
  }
+ 
+

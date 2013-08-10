@@ -45,7 +45,7 @@ int Tow;
 int Hdop;
 int Svs;
 int  SatIdList_gps;
-int  Ehpe_gps;
+int  Hepe_gps;
 
 int[] Rmat = new int[9]; 
 int Cpu_load;
@@ -116,9 +116,21 @@ int i = 0;
  int SizeX = 600;
  int SizeY = 300;
  
+ // Heading gauge parameters
+ PGraphics HeadArea;
+ int HE_X, HE_Y;
+ int HE_WIDTH = 500, HE_HEIGHT = 150;
+ int FrHeX; // X Starting point for frame 
+ int FrHeY; // Y Starting point for frame
+ int CenterXhe = HE_WIDTH / 2;
+ int CenterYhe = HE_HEIGHT / 2;
+ int SizeXhe = 500;
+ int SizeYhe = 300;
+ 
  // data received from joystick
  int YawDes;      // desired heading
  int VelDes;      // desired speed
+ int YawOffset=45;   // initial position offset
  int DigitalBits; // status of switches and LEDs
  int LedRedFlag = 0;
  int LedGreenFlag = 0;
@@ -148,6 +160,7 @@ int i = 0;
  PImage LedGreenOff;
  PImage LedYellowOn;
  PImage LedYellowOff;
+ PImage HeadGauge;
  
  int LedRedX = 20;
  int LedRedY = 450;
@@ -157,7 +170,7 @@ int i = 0;
  
  int LedYellowX = 230;
  int LedYellowY = 450;
-
+ float Rot = 0;
 
 /*/////////////////////////////////////////////////////////////////////////////*/
 void setup()
@@ -171,6 +184,7 @@ void setup()
   LedGreenOff = loadImage("LedGreenOff.gif");
   LedYellowOn = loadImage("LedYellowOn.gif");
   LedYellowOff = loadImage("LedYellowOff.gif");
+  HeadGauge = loadImage("HeadGauge.gif");
   
  // Compass gauge parameters
  CmHorX = width-280;    // X Starting point
@@ -187,6 +201,18 @@ void setup()
  HorizonArea.beginDraw();
  HorizonArea.background(0,0);
  HorizonArea.endDraw();
+ 
+ // Heading gauge parameters
+ FrHeX = width/2-(HE_WIDTH/2);       // X Starting point change this to relocate the gauge
+ FrHeY = height/2-(HE_HEIGHT/2)+40;   // Y Starting point
+ HE_X=FrHeX;  
+ HE_Y=FrHeY+20;
+ 
+ // Create a new graphical context
+ HeadArea = createGraphics(HE_WIDTH, HE_HEIGHT, P2D);
+ HeadArea.beginDraw();
+ HeadArea.background(0,0);
+ HeadArea.endDraw();
  
  Xh=-width/2+CircleH/2;
  Yh=height/2-CircleH/2;
@@ -226,7 +252,8 @@ ArduinoPort = new Serial(this, "/dev/tty.usbserial-A700ejZq", 57600);
   } 
 
 //*********************** Try init RS232 ********************** 
-RS232Port = new Serial(this, "/dev/tty.usbserial-A20e27AC", 57600);
+RS232Port = new Serial(this, "/dev/tty.usbserial-A4001qAF", 57600); // XBee adapter
+// RS232Port = new Serial(this, "/dev/tty.usbserial-A20e27AC", 57600); // USB-serial adapter
  try
  { 
       RS232Port.write(0);
@@ -251,7 +278,8 @@ void draw()
   
   // Update display
   image(HorizonArea, HA_X, HA_Y);
-  
+  image(HeadArea, HE_X, HE_Y);
+
   if(ArduinoFlag)
   {  
     TxArduinoCmd('d');  // ask data
@@ -280,8 +308,8 @@ void draw()
   {
     CommWd ++;
     if (CommWd > COMM_WD_TMO)
-    {// too much time without new data from joystick. Vel set to zero for safety
-      VelDes = 0; 
+    {// too much time without new data from joystick. Vel set to HALT for safety
+      VelDes = 0X7FFF; 
     }
     
     if(SwitchBit == 1)      // speed and heading set only if switch is eanbled
@@ -291,7 +319,7 @@ void draw()
     }
     else
     {
-      TxIntValue[0] = 0;
+      TxIntValue[0] = 0X7FFF;
       TxIntValue[1] = 0;    
     }
     
@@ -346,12 +374,12 @@ void draw()
         Hdop=RxBuff[HeadLen+6];
         Svs=RxBuff[HeadLen+7];
         SatIdList_gps=(RxBuff[HeadLen+8] << 32) + (RxBuff[HeadLen+9] << 16) + (RxBuff[HeadLen+10] << 8) + (RxBuff[HeadLen+11]);
-        Ehpe_gps=(RxBuff[HeadLen+12] << 32) + (RxBuff[HeadLen+13] << 16) + (RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15]);
+        Hepe_gps=(RxBuff[HeadLen+12] << 32) + (RxBuff[HeadLen+13] << 16) + (RxBuff[HeadLen+14] << 8) + (RxBuff[HeadLen+15]);
       }
     }
       
     TxData(0, 'K', 0, 3);  // ask for GPS & IMU (DCM) parameters every 0.1 seconds
-    if (RxData('K',35))
+    if (RxData('K',37))
     {// two bytes -> int16
      // four bytes -> int32
      
@@ -370,7 +398,7 @@ void draw()
      Rmat[7]=Int16toint32(((RxBuff[HeadLen+30] << 8) + (RxBuff[HeadLen+31])));
      Rmat[8]=Int16toint32(((RxBuff[HeadLen+32] << 8) + (RxBuff[HeadLen+33])));
      Cpu_load=RxBuff[HeadLen+34];
-    
+     YawOffset=Int16toint32(((RxBuff[HeadLen+35] << 8) + (RxBuff[HeadLen+36])));
     
         /*
          print("Lat: ");
@@ -413,7 +441,7 @@ void draw()
    
         PitchRad = asin(Rmat[7] / 16384.0); // RAD
         PitchDeg = PitchRad / (2*PI) * 360;
-        RollRad = asin(Rmat[6] / 16385.0);
+        RollRad = asin(Rmat[6] / 16384.0);
         RollDeg = RollRad / (2*PI) * 360;
         // Allow for inverted flight
         if (Rmat[8] < 0)
@@ -425,6 +453,7 @@ void draw()
         // Compute the heading from Rmat readings.
         YawRad = atan2(- Rmat[1] , Rmat[4]);
         YawDeg = (YawRad / (2 * PI)) * 360;
+        Rot=YawDeg-YawOffset;
     }
   } 
   /*
@@ -444,7 +473,9 @@ void draw()
   DispLed();
   movingHorizon(PitchDeg, RollDeg);
   frameHoriz();
+  
   compass(YawDeg);
-  DispText(PitchDeg, RollDeg,YawDeg);
+  DispText(PitchDeg, RollDeg,Rot);
   Box3D();
+  frameHeading(Rot);
 }
